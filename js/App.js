@@ -1,14 +1,10 @@
 import SPARQL from './SPARQL.js';
-import Location from './Location.js';
-import UIT from '../UItools/UItools.js';
+import Station from './Station.js';
 
 class App {
 	constructor() {
-
 		this.appData = {};
-
 		this.GetAllStations();
-
 	}
 
 	GetAllStations() {
@@ -25,29 +21,25 @@ class App {
 			{
 				?url dc:type <http://vocab.getty.edu/aat/300007780> .
 				?url rdfs:label ?name . 
+				?url dc:type ?type .
 				?url owl:sameAs ?additionalData
 			}
 			UNION
 			{
 				?url dc:type <http://vocab.getty.edu/aat/300007783> .
 				?url rdfs:label ?name . 
+				?url dc:type ?type .
 				?url owl:sameAs ?additionalData
 			}
 		}`;
 
 		sparql.Fetch(query, (err, data) => {
-			console.log(data);
 			if (err) {
 				console.warn(err);
 			} else {
 				// Push all data into our apps data
 				data.forEach((element) => {
-					this.appData.stations.push(new Location(element));
-				});
-
-				// Basic render of all items
-				this.appData.stations.forEach((station) => {
-					UIT.renderText(station.name, document.body);
+					this.appData.stations.push(new Station(element));
 				});
 			}
 		});
