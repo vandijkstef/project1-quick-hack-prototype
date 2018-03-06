@@ -8,8 +8,11 @@ class Station {
 		this.adamLink = data.url.value;
 		this.additionalData = this.ParseAdditionalDataUrl(data.additionalData.value);
 		this.stationType = this.GetType(data.type.value);
+		
 		this._element = this.Render();
-		console.log(this);
+		// this._element.dataset.data = JSON.stringify(this);
+		// UIT.addHandler(this._element, this.Click);
+		// console.log(this);
 	}
 
 	ParseAdditionalDataUrl(url) {
@@ -18,6 +21,9 @@ class Station {
 			type: urlArray[2],
 			id: urlArray[4]
 		};
+		if (additionalData.type === 'verdwenengebouwen.nl') {
+			this.deprecated = true;
+		}
 		return additionalData;
 	}
 
@@ -32,8 +38,19 @@ class Station {
 		}
 	}
 
+	Click(e) {
+		console.log(e.target);
+	}
+
 	Render() {
-		return UIT.renderText(this.name + ' | ' + this.stationType, document.body)[0];
+		const classes = [];
+		classes.push('station');
+		classes.push(this.stationType);
+		if (this.deprecated) {
+			classes.push('deprecated');
+		}
+		let testText = UIT.getText(this.name + ' | ' + this.stationType + ' | ' + this.additionalData.type, 'name');
+		return UIT.renderIn(testText, document.body, classes)[0];
 	}
 
 }

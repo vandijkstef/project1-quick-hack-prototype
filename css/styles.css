@@ -1,3 +1,11 @@
 body {
   background-color: tomato;
 }
+
+.station {
+  background-color: yellowgreen;
+}
+
+.deprecated {
+  background-color: peru;
+}
