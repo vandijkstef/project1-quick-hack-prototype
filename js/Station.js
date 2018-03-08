@@ -1,18 +1,21 @@
 import UIT from '../UItools/UItools.js';
+import API from './API.js';
+// import SPARQL from './SPARQL.js';
 
 class Station {
 	constructor(data) {
 		this._data = data;
 	
 		this.name = data.name.value;
-		this.adamLink = data.url.value;
 		this.additionalData = this.ParseAdditionalDataUrl(data.additionalData.value);
 		this.stationType = this.GetType(data.type.value);
-		
-		this._element = this.Render();
-		// this._element.dataset.data = JSON.stringify(this);
-		// UIT.addHandler(this._element, this.Click);
-		// console.log(this);
+		this.urls = {
+			adam: data.url.value,
+			additionalData: data.additionalData.value
+		};
+		this.created = '0';
+		// this._element = this.Render()[0];
+		// this.Expand();
 	}
 
 	ParseAdditionalDataUrl(url) {
@@ -42,7 +45,8 @@ class Station {
 		console.log(e.target);
 	}
 
-	Render() {
+	Render(scales) {
+		this.scales = scales;
 		const classes = [];
 		classes.push('station');
 		classes.push(this.stationType);
@@ -50,7 +54,141 @@ class Station {
 			classes.push('deprecated');
 		}
 		let testText = UIT.getText(this.name + ' | ' + this.stationType + ' | ' + this.additionalData.type, 'name');
-		return UIT.renderIn(testText, document.body, classes)[0];
+		this._element = UIT.renderIn(testText, document.body, classes)[0];
+	}
+
+	PostRender() {
+		// Create all the additional elements
+		this.Update();
+	}
+
+	Update() {
+		// Actually update the elements
+		// console.log('updating', this._element);
+		let existanceText = '';
+		if (this.created !== '0') {
+			// UIT.renderIn(UIT.getText(this.created), this._element);
+			existanceText += this.created;
+			this._element.dataset.created = this.created;
+		}
+		if (this.destroyed) {
+			console.log('doooing');
+			existanceText += ' - ' + this.destroyed;
+			this._element.dataset.destroyed = this.destroyed;
+		}
+		UIT.renderIn(UIT.getText(existanceText), this._element);
+		
+		// 2000 - 1840 = 160 * units
+		this.scales.leftOffset = (this.created - this.scales.minYear) * this.scales.unitsPerYear;
+		this._element.style.left = this.scales.leftOffset + 'px';
+		
+		// 2018 - 2000 = 18 * units
+		this._element.style.width = (this.destroyed - this.created) * this.scales.unitsPerYear + 'px';
+	}
+
+	Expand(callback) {
+		if (this.additionalData.type === 'verdwenengebouwen.nl') {
+			this.ExpandVerdwenenGebouwen((bool) => {
+				return callback(bool);
+			});
+		} else if (this.additionalData.type === 'www.wikidata.org') {
+			this.ExpandWikiDataTheirCode((bool) => {
+				return callback(bool);
+			});
+		}
+	}
+
+	ExpandVerdwenenGebouwen(callback) {
+		const api = new API('http://verdwenengebouwen.nl/');
+		api.callCallback(`gebouw/json/${this.additionalData.id}`, (data) => {
+			this.expanded = true;
+			this.geoPos = {
+				lat: data.lat,
+				lon: data.lon
+			};
+			this.created = data.startmin;
+			this.destroyed = data.endmin || 2018;
+			this.urls.wiki = data.wiki;
+			this.images = [];
+			data.depictions.forEach((img) => {
+				this.images.push(img);
+			});
+			this.description = data.description;
+			// this.PostRender();
+			return callback(true);
+		});
+	}
+
+	ExpandWikiData() {
+		// const sparql = new SPARQL('https://query.wikidata.org/sparql/+?query=');
+		// const query = `
+		// PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+		// PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		// PREFIX dc: <http://purl.org/dc/elements/1.1/>
+		// PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+		// SELECT * WHERE {  
+		// 	?item wdt:P31 wd:Q1339195 .
+		// 	?item wdt:P18 ?image
+		// 	SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+		// 	FILTER(?item IN (wd:Q50720))
+		// 	}`;
+		// sparql.Fetch(query, (data) => {
+		// 	console.log(data);
+		// });
+	}
+
+	ExpandWikiDataTheirCode(callback) {
+		// This method is copied from Wikidata's code
+		const endpointUrl = 'https://query.wikidata.org/sparql';
+		const sparqlQuery = `
+		SELECT * WHERE {  
+			?item wdt:P31 wd:Q1339195 .
+			optional {?item wdt:P1619 ?opening} .
+			optional {?item wdt:P18 ?image} .
+			optional {?item wdt:P625 ?geo} .
+			optional {?item wdt:P197 ?adjStations} .
+			optional {?item wdt:P131 ?city} .
+			optional {?city wdt:P373 ?cityName }
+			SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+			FILTER(?item IN (wd:${this.additionalData.id}))
+			}`;
+		const fullUrl = endpointUrl + '?query=' + encodeURIComponent( sparqlQuery );
+		const headers = { 'Accept': 'application/sparql-results+json' };
+
+		fetch(fullUrl, {headers})
+			.then(body => body.json())
+			.then((json) => {
+				// console.log(json);
+				const {head: {vars}, results} = json;
+				this.expanded = true;
+				for (const result of results.bindings ) {
+					// console.log(result);
+					for ( const variable of vars ) {
+
+						// this.expanded = true;
+						// this.geoPos = {
+						// 	lat: data.lat,
+						// 	lon: data.lon
+						// };
+						// this.destroyed = data.endmin;
+						// this.urls.wiki = data.wiki;
+						// this.images = [];
+						// data.depictions.forEach((img) => {
+						// 	this.images.push(img);
+						// });
+						// this.description = data.description;
+
+						if (variable === 'opening') {
+							this.created = new Date(result[variable].value).getFullYear();
+						}
+						this.destroyed = 2018;
+					}
+					// console.log( '---' );
+				}
+				// this.PostRender();
+				return callback(true);
+			});
 	}
 
 }

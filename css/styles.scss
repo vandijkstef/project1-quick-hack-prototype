@@ -1,11 +1,24 @@
 body {
+	margin: 0;
+	// height: 100vh;
+	width: 500vw;
+	// overflow-y: hidden;
+	display: flex;
+	flex-direction: column;
 	background-color: tomato;
 }
 
 .station {
+	border: 1px solid blanchedalmond;
 	background-color: yellowgreen;
+	display: none;
+	position: relative;
+	&[data-created] {
+		display: block;
+	}
 }
 
 .deprecated {
 	background-color: peru;
 }
+
