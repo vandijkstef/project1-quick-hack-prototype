@@ -9,10 +9,13 @@ body {
 #years {
 	order: -1;
 	display: flex;
-	position: relative;
-	margin-bottom: 2em;
+	position: fixed;
+	top: 0;
+	background-color: rgba(255, 255, 255, .9);
+	// padding-bottom: 2em;
+	width: 100vw;
 	p {
-		position: absolute;
+		position: relative;
 		float: left;
 	}
 }
@@ -22,8 +25,14 @@ body {
 	background-color: yellowgreen;
 	position: relative;
 	&[data-created] {
-		display: block;
+		display: flex;
+		border-bottom: 20px solid;
+		border-image: url('/img/train-tracks.svg') 18 round;
 	}
+	img, svg {
+		max-width: 3.5em;
+	}
+	border-bottom: .2em dashed black;
 }
 
 .deprecated {
@@ -32,5 +41,15 @@ body {
 
 .nodata {
 	background-color: tomato;
+}
+
+footer {
+	padding-top: 2em;
+	order: 10;
+	text-align: right;
+	color: grey;
+	a {
+		color: grey;
+	}
 }
 

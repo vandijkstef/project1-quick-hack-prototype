@@ -55,8 +55,8 @@ class Station {
 		if (this.deprecated) {
 			classes.push('deprecated');
 		}
-		let testText = UIT.getText(this.name + ' | ' + this.stationType + ' | ' + this.additionalData.type, 'name');
-		this._element = UIT.renderIn(testText, timelineElement, classes)[0];
+		let testText = UIT.getText(this.name, 'name');
+		this._element = UIT.renderIn([UIT.getImage('/img/train-station.svg'), testText], timelineElement, classes)[0];
 	}
 
 	PostRender() {
@@ -104,7 +104,7 @@ class Station {
 				return callback(bool);
 			});
 		} else {
-			console.log(`No additional data for ${this.name}`);
+			console.warn(`No additional data for ${this.name}`);
 			return callback(true);
 		}
 	}
@@ -178,31 +178,29 @@ class Station {
 		fetch(fullUrl, {headers})
 			.then(body => body.json())
 			.then((json) => {
-				console.log(this.name, json);
 				const {head: {vars}, results} = json;
 				this.expanded = true;
-				console.log(results.bindings);
 				for (const result of results.bindings ) {
-					for ( const variable of vars ) {
+					// for ( const variable of vars ) {
 
-						// this.expanded = true;
-						// this.geoPos = {
-						// 	lat: data.lat,
-						// 	lon: data.lon
-						// };
-						// this.destroyed = data.endmin;
-						// this.urls.wiki = data.wiki;
-						// this.images = [];
-						// data.depictions.forEach((img) => {
-						// 	this.images.push(img);
-						// });
-						// this.description = data.description;
+					// this.expanded = true;
+					// this.geoPos = {
+					// 	lat: data.lat,
+					// 	lon: data.lon
+					// };
+					// this.destroyed = data.endmin;
+					// this.urls.wiki = data.wiki;
+					// this.images = [];
+					// data.depictions.forEach((img) => {
+					// 	this.images.push(img);
+					// });
+					// this.description = data.description;
 						
-						if (result['opening']) {
-							this.created = new Date(result['opening'].value).getFullYear();
-						}
-						this.destroyed = 2018;
+					// }
+					if (result['opening']) {
+						this.created = new Date(result['opening'].value).getFullYear();
 					}
+					this.destroyed = 2018;
 				}
 				return callback(true);
 			});

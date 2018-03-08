@@ -9,12 +9,14 @@ body {
 #years {
   order: -1;
   display: flex;
-  position: relative;
-  margin-bottom: 2em;
+  position: fixed;
+  top: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  width: 100vw;
 }
 
 #years p {
-  position: absolute;
+  position: relative;
   float: left;
 }
 
@@ -22,10 +24,17 @@ body {
   display: none;
   background-color: yellowgreen;
   position: relative;
+  border-bottom: .2em dashed black;
 }
 
 .station[data-created] {
-  display: block;
+  display: flex;
+  border-bottom: 20px solid;
+  border-image: url("/img/train-tracks.svg") 18 round;
+}
+
+.station img, .station svg {
+  max-width: 3.5em;
 }
 
 .deprecated {
@@ -34,4 +43,15 @@ body {
 
 .nodata {
   background-color: tomato;
+}
+
+footer {
+  padding-top: 2em;
+  order: 10;
+  text-align: right;
+  color: grey;
+}
+
+footer a {
+  color: grey;
 }
