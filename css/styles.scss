@@ -22,8 +22,8 @@ body {
 
 .station {
 	// border: 1px solid blanchedalmond;
+	display: none;
 	background-color: yellowgreen;
-	// display: none;
 	position: relative;
 	&[data-created] {
 		display: block;

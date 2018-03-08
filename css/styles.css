@@ -19,6 +19,7 @@ body {
 }
 
 .station {
+  display: none;
   background-color: yellowgreen;
   position: relative;
 }

@@ -136,48 +136,58 @@ class Station {
 	}
 
 	ExpandWikiData() {
-		// const sparql = new SPARQL('https://query.wikidata.org/sparql/+?query=');
-		// const query = `
-		// PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-		// PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-		// PREFIX dc: <http://purl.org/dc/elements/1.1/>
-		// PREFIX owl: <http://www.w3.org/2002/07/owl#>
-
-		// SELECT * WHERE {  
-		// 	?item wdt:P31 wd:Q1339195 .
-		// 	?item wdt:P18 ?image
-		// 	SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-		// 	FILTER(?item IN (wd:Q50720))
-		// 	}`;
-		// sparql.Fetch(query, (data) => {
-		// 	console.log(data);
-		// });
+		// We didn't get this working on our own class. We used WikiData provided code instead in ExpandWikiDataTheirCode();
 	}
 
 	ExpandWikiDataTheirCode(callback) {
 		// console.log('doing for ', this.name);
 		// This method is copied from Wikidata's code
 		const endpointUrl = 'https://query.wikidata.org/sparql';
+		// console.log(this.additional)
 		const sparqlQuery = `
-		SELECT * WHERE {  
-			?item wdt:P31 wd:Q1339195 .
-			optional {?item wdt:P1619 ?opening} .
-			optional {?item wdt:P18 ?image} .
-			optional {?item wdt:P625 ?geo} .
-			optional {?item wdt:P197 ?adjStations} .
-			optional {?item wdt:P131 ?city} .
-			optional {?city wdt:P373 ?cityName }
-			SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-			FILTER(?item IN (wd:${this.additionalData.id}))
-			}`;
+		SELECT * WHERE {
+			{
+				?item wdt:P31 wd:Q1339195 .
+				optional {?item wdt:P1619 ?opening} .
+				optional {?item wdt:P18 ?image} .
+				optional {?item wdt:P625 ?geo} .
+				optional {?item wdt:P197 ?adjStations} .
+				optional {?item wdt:P131 ?city} .
+				optional {?city wdt:P373 ?cityName }
+				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+				FILTER(?item IN (wd:${this.additionalData.id}))
+			} UNION {
+				?item wdt:P31 wd:Q55488 .
+				optional {?item wdt:P1619 ?opening} .
+				optional {?item wdt:P18 ?image} .
+				optional {?item wdt:P625 ?geo} .
+				optional {?item wdt:P197 ?adjStations} .
+				optional {?item wdt:P131 ?city} .
+				optional {?city wdt:P373 ?cityName }
+				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+				FILTER(?item IN (wd:${this.additionalData.id}))
+			}
+			UNION {
+				?item wdt:P31 wd:Q3201814 .
+				optional {?item wdt:P1619 ?opening} .
+				optional {?item wdt:P18 ?image} .
+				optional {?item wdt:P625 ?geo} .
+				optional {?item wdt:P197 ?adjStations} .
+				optional {?item wdt:P131 ?city} .
+				optional {?city wdt:P373 ?cityName }
+				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+				FILTER(?item IN (wd:${this.additionalData.id}))
+			}
+		}`;
+
 		const fullUrl = endpointUrl + '?query=' + encodeURIComponent( sparqlQuery );
-		console.log(fullUrl);
+
 		const headers = { 'Accept': 'application/sparql-results+json' };
 
 		fetch(fullUrl, {headers})
 			.then(body => body.json())
 			.then((json) => {
-				// console.log(json);
+				console.log(this.name, json);
 				const {head: {vars}, results} = json;
 				this.expanded = true;
 				console.log(results.bindings);
@@ -196,16 +206,13 @@ class Station {
 						// 	this.images.push(img);
 						// });
 						// this.description = data.description;
-						// console.log('HIER', this.name);
-						if (variable === 'opening') {
-
-							this.created = new Date(result[variable].value).getFullYear();
+						
+						if (result['opening']) {
+							this.created = new Date(result['opening'].value).getFullYear();
 						}
 						this.destroyed = 2018;
 					}
-					// console.log( '---' );
 				}
-				// this.PostRender();
 				return callback(true);
 			});
 	}
