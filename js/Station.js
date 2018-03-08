@@ -14,8 +14,6 @@ class Station {
 			additionalData: data.additionalData.value
 		};
 		this.created = '0';
-		// this._element = this.Render()[0];
-		// this.Expand();
 	}
 
 	ParseAdditionalDataUrl(url) {
@@ -63,22 +61,20 @@ class Station {
 
 	PostRender() {
 		// Create all the additional elements
+		// Or... whatever
 		this.Update();
 	}
 
 	Update() {
 		// Actually update the elements
-		// console.log('updating', this._element);
 		let existanceText = '';
 		if (this.created !== '0') {
-			// UIT.renderIn(UIT.getText(this.created), this._element);
 			existanceText += this.created;
 			this._element.dataset.created = this.created;
 		} else {
 			this.created = this.scales.minYear;
 		}
 		if (this.destroyed) {
-			// console.log('doooing');
 			existanceText += ' - ' + this.destroyed;
 			this._element.dataset.destroyed = this.destroyed;
 		} else {
@@ -96,7 +92,6 @@ class Station {
 		if (this.created === this.scales.minYear) {
 			this.Focus();
 		}
-		// console.log(this.urls.adam, this._data.additionalData);
 	}
 
 	Expand(callback) {
@@ -130,7 +125,6 @@ class Station {
 				this.images.push(img);
 			});
 			this.description = data.description;
-			// this.PostRender();
 			return callback(true);
 		});
 	}
@@ -140,10 +134,8 @@ class Station {
 	}
 
 	ExpandWikiDataTheirCode(callback) {
-		// console.log('doing for ', this.name);
-		// This method is copied from Wikidata's code
+		// This method is copied from WikiData
 		const endpointUrl = 'https://query.wikidata.org/sparql';
-		// console.log(this.additional)
 		const sparqlQuery = `
 		SELECT * WHERE {
 			{
@@ -166,8 +158,7 @@ class Station {
 				optional {?city wdt:P373 ?cityName }
 				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 				FILTER(?item IN (wd:${this.additionalData.id}))
-			}
-			UNION {
+			} UNION {
 				?item wdt:P31 wd:Q3201814 .
 				optional {?item wdt:P1619 ?opening} .
 				optional {?item wdt:P18 ?image} .
@@ -216,7 +207,6 @@ class Station {
 				return callback(true);
 			});
 	}
-
 }
 
 export default Station;

@@ -8,8 +8,6 @@ class App {
 		this.GetAllStations();
 		console.log(this.appData);
 		this.timelineWrap = UItools.render(UItools.createElement('', 'timeline', 'section'), document.body)[0];
-		// this.timelineWrap = document.querySelector('#timeline');
-		// console.log(this.timelineWrap);
 	}
 
 	GetAllStations() {
@@ -54,7 +52,6 @@ class App {
 		if (!this.expandCounter) {
 			this.expandCounter = 0;
 		}
-		// console.log(this.expandCounter, this.appData.stations.length);
 		if (this.expandCounter < this.appData.stations.length) {
 			this.appData.stations[this.expandCounter].Expand((bool) => {
 				this.expandCounter++;

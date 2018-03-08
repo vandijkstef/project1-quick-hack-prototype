@@ -1,8 +1,5 @@
 body {
 	margin: 0;
-	// height: 100vh;
-	// width: 500vw;
-	// overflow-y: hidden;
 	display: flex;
 	flex-direction: column;
 	background-color: rgba(248, 232, 212, .6);
@@ -21,7 +18,6 @@ body {
 }
 
 .station {
-	// border: 1px solid blanchedalmond;
 	display: none;
 	background-color: yellowgreen;
 	position: relative;
