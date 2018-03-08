@@ -45,7 +45,11 @@ class Station {
 		console.log(e.target);
 	}
 
-	Render(scales) {
+	Focus() {
+		this._element.scrollIntoView();
+	}
+
+	Render(timelineElement, scales) {
 		this.scales = scales;
 		const classes = [];
 		classes.push('station');
@@ -54,7 +58,7 @@ class Station {
 			classes.push('deprecated');
 		}
 		let testText = UIT.getText(this.name + ' | ' + this.stationType + ' | ' + this.additionalData.type, 'name');
-		this._element = UIT.renderIn(testText, document.body, classes)[0];
+		this._element = UIT.renderIn(testText, timelineElement, classes)[0];
 	}
 
 	PostRender() {
@@ -70,20 +74,29 @@ class Station {
 			// UIT.renderIn(UIT.getText(this.created), this._element);
 			existanceText += this.created;
 			this._element.dataset.created = this.created;
+		} else {
+			this.created = this.scales.minYear;
 		}
 		if (this.destroyed) {
-			console.log('doooing');
+			// console.log('doooing');
 			existanceText += ' - ' + this.destroyed;
 			this._element.dataset.destroyed = this.destroyed;
+		} else {
+			this.destroyed = this.scales.currentYear;
 		}
 		UIT.renderIn(UIT.getText(existanceText), this._element);
 		
-		// 2000 - 1840 = 160 * units
 		this.scales.leftOffset = (this.created - this.scales.minYear) * this.scales.unitsPerYear;
 		this._element.style.left = this.scales.leftOffset + 'px';
-		
-		// 2018 - 2000 = 18 * units
 		this._element.style.width = (this.destroyed - this.created) * this.scales.unitsPerYear + 'px';
+
+		if (!this.expanded) {
+			this._element.classList.add('nodata');
+		}
+		if (this.created === this.scales.minYear) {
+			this.Focus();
+		}
+		// console.log(this.urls.adam, this._data.additionalData);
 	}
 
 	Expand(callback) {
@@ -95,6 +108,9 @@ class Station {
 			this.ExpandWikiDataTheirCode((bool) => {
 				return callback(bool);
 			});
+		} else {
+			console.log(`No additional data for ${this.name}`);
+			return callback(true);
 		}
 	}
 
@@ -139,6 +155,7 @@ class Station {
 	}
 
 	ExpandWikiDataTheirCode(callback) {
+		// console.log('doing for ', this.name);
 		// This method is copied from Wikidata's code
 		const endpointUrl = 'https://query.wikidata.org/sparql';
 		const sparqlQuery = `
@@ -154,6 +171,7 @@ class Station {
 			FILTER(?item IN (wd:${this.additionalData.id}))
 			}`;
 		const fullUrl = endpointUrl + '?query=' + encodeURIComponent( sparqlQuery );
+		console.log(fullUrl);
 		const headers = { 'Accept': 'application/sparql-results+json' };
 
 		fetch(fullUrl, {headers})
@@ -162,8 +180,8 @@ class Station {
 				// console.log(json);
 				const {head: {vars}, results} = json;
 				this.expanded = true;
+				console.log(results.bindings);
 				for (const result of results.bindings ) {
-					// console.log(result);
 					for ( const variable of vars ) {
 
 						// this.expanded = true;
@@ -178,8 +196,9 @@ class Station {
 						// 	this.images.push(img);
 						// });
 						// this.description = data.description;
-
+						// console.log('HIER', this.name);
 						if (variable === 'opening') {
+
 							this.created = new Date(result[variable].value).getFullYear();
 						}
 						this.destroyed = 2018;

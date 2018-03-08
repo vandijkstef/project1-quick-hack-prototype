@@ -1,15 +1,25 @@
 body {
   margin: 0;
-  width: 500vw;
   display: flex;
   flex-direction: column;
-  background-color: tomato;
+  background-color: rgba(248, 232, 212, 0.6);
+  background-image: url("/img/texturedpaper.png");
+}
+
+#years {
+  order: -1;
+  display: flex;
+  position: relative;
+  margin-bottom: 2em;
+}
+
+#years p {
+  position: absolute;
+  float: left;
 }
 
 .station {
-  border: 1px solid blanchedalmond;
   background-color: yellowgreen;
-  display: none;
   position: relative;
 }
 
@@ -19,4 +29,8 @@ body {
 
 .deprecated {
   background-color: peru;
+}
+
+.nodata {
+  background-color: tomato;
 }
