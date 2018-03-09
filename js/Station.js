@@ -1,6 +1,5 @@
 import UIT from '../UItools/UItools.js';
 import API from './API.js';
-// import SPARQL from './SPARQL.js';
 
 class Station {
 	constructor(data) {
