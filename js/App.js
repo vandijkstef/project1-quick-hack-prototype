@@ -4,6 +4,7 @@ import UItools from '../UItools/UItools.js';
 
 class App {
 	constructor() {
+		this.Loading();
 		this.appData = {};
 		this.GetAllStations();
 		console.log(this.appData);
@@ -67,6 +68,7 @@ class App {
 	RenderTimeline() {
 		// TODO: Before we do this: test if we can merge/clean more data (Amsterdam Centraal is a good example, having 3 versions of itself. They should be collapsible based on ids)
 		document.body.style.width = this.Scales().totalWidth;
+		this.Loading(true);
 		this.RenderYears();
 		this.appData.stations.sort((station1, station2) => {
 			return station2.created - station1.created;
@@ -99,19 +101,26 @@ class App {
 	}
 
 	RenderYears() {
+		UItools.render(UItools.createElement('years', 'backdrop'), document.body)[0];
 		const timeline = UItools.render(UItools.createElement('', 'years', 'section'), document.body)[0];
 		// Render first year
 		this.SetYear(UItools.render(UItools.getText(this.scales.minYear), timeline)[0]);
 		// Render inbetween years
 		let yearStep = this.scales.minYear;
+		let lastRendered;
 		while (yearStep < this.scales.currentYear) {
 			if (yearStep % 10 === 0) {
-				this.SetYear(UItools.render(UItools.getText(yearStep), timeline)[0]);
+				if (yearStep - this.scales.minYear > 3) {
+					this.SetYear(UItools.render(UItools.getText(yearStep), timeline)[0]);
+					lastRendered = yearStep;
+				}
 			}
 			yearStep++;
 		}
 		// Render last year
-		this.SetYear(UItools.render(UItools.getText(this.scales.currentYear), timeline)[0]);
+		if (this.scales.currentYear - lastRendered > 3) {
+			this.SetYear(UItools.render(UItools.getText(this.scales.currentYear), timeline)[0]);
+		}
 	}
 
 	SetYear(yearElement) {
@@ -123,6 +132,15 @@ class App {
 		}
 		const leftOffset = (yearElement.innerText - padding - this.scales.minYear) * this.scales.unitsPerYear;
 		yearElement.style.left = leftOffset + 'px';
+	}
+
+	Loading(unload) {
+		if (!this.loading) {
+			this.loading = UItools.renderIn(UItools.getImage('/img/train.svg', 'loading'), document.body, '', 'loading')[0];
+		}
+		if (unload) {
+			this.loading.classList.add('hidden');
+		}
 	}
 }
 

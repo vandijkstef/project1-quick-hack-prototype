@@ -22,9 +22,9 @@ class Station {
 			type: urlArray[2],
 			id: urlArray[4]
 		};
-		if (additionalData.type === 'verdwenengebouwen.nl') {
-			this.deprecated = true;
-		}
+		// if (additionalData.type === 'verdwenengebouwen.nl') {
+			
+		// }
 		return additionalData;
 	}
 
@@ -56,7 +56,52 @@ class Station {
 			classes.push('deprecated');
 		}
 		let testText = UIT.getText(this.name, 'name');
+		
 		this._element = UIT.renderIn([UIT.getImage('/img/train-station.svg'), testText], timelineElement, classes)[0];
+		UIT.addHandler(this._element, (e) => {
+			this.OpenStation(e);
+		});
+		UIT.addHandler(window, (e) => {
+			if (document.activeElement === this._element && e.key === 'Enter') {
+				// console.log(e);	
+				this.OpenStation(e);
+			}
+		}, 'keyup');
+
+	}
+
+	OpenStation(e) {
+		if (!this._element.classList.contains('detail')) {
+			this.scrollX = window.scrollX;
+			this.scrollY = window.scrollY;
+			this.allStations = document.querySelectorAll('[data-created]');
+			this.allStations.forEach((station) => {
+				station.classList.add('hidden');
+			});
+			document.querySelector('#years').classList.add('hidden');
+			this._element.classList.remove('hidden');
+			this._element.classList.add('detail');
+			this.GetDetails();
+		} else {
+			this.CloseStation(e);
+		}
+	}
+
+	CloseStation() {
+		this._element.classList.remove('detail');
+		document.querySelector('#years').classList.remove('hidden');
+		this.allStations.forEach((station) => {
+			station.classList.remove('hidden');
+		});
+		window.scrollTo(this.scrollX, this.scrollY);
+	}
+
+	// Render stuff on the detail view
+	GetDetails() {
+		if (!this._detailElement) {
+			console.log('rendering detaul');
+			this._detailElement = UIT.renderIn(UIT.getText('Details'), this._element, 'details')[0];
+		}
 	}
 
 	PostRender() {
@@ -71,8 +116,6 @@ class Station {
 		if (this.created !== '0') {
 			existanceText += this.created;
 			this._element.dataset.created = this.created;
-		} else {
-			this.created = this.scales.minYear;
 		}
 		if (this.destroyed) {
 			existanceText += ' - ' + this.destroyed;
@@ -81,15 +124,18 @@ class Station {
 			this.destroyed = this.scales.currentYear;
 		}
 		UIT.renderIn(UIT.getText(existanceText), this._element);
-		
+		if (this.scales.currentYear !== this.destroyed) {
+			this._element.classList.add('deprecated');
+		}
 		this.scales.leftOffset = (this.created - this.scales.minYear) * this.scales.unitsPerYear;
 		this._element.style.left = this.scales.leftOffset + 'px';
 		this._element.style.width = (this.destroyed - this.created) * this.scales.unitsPerYear + 'px';
-
+		this._element.setAttribute('tabindex', this.created);
 		if (!this.expanded) {
 			this._element.classList.add('nodata');
 		}
 		if (this.created === this.scales.minYear) {
+			console.log(this.created, this.scales.minYear);
 			this.Focus();
 		}
 	}
@@ -107,6 +153,10 @@ class Station {
 			console.warn(`No additional data for ${this.name}`);
 			return callback(true);
 		}
+	}
+
+	ExpandDetail(callback) {
+		return callback(true);
 	}
 
 	ExpandVerdwenenGebouwen(callback) {
@@ -136,36 +186,37 @@ class Station {
 	ExpandWikiDataTheirCode(callback) {
 		// This method is copied from WikiData
 		const endpointUrl = 'https://query.wikidata.org/sparql';
+		const properties = `
+				optional {?item wdt:P1619 ?opening} .
+				optional {?item wdt:P582 ?endtime} .
+				optional {?item wdt:P18 ?image} .
+				optional {?item wdt:P625 ?geo} .
+				optional {?item wdt:P197 ?adjStations} .
+				optional {?item wdt:P131 ?city} .
+				optional {?city wdt:P373 ?cityName } .
+				optional {?item wdt:P18 ?img} .
+				optional {?item rdfs:label ?country filter (lang(?country) = "nl")} .
+				optional {
+					?article schema:about ?item .
+					?article schema:inLanguage "nl" .
+					?article schema:isPartOf <https://nl.wikipedia.org/> .
+				}
+		`;
 		const sparqlQuery = `
 		SELECT * WHERE {
 			{
 				?item wdt:P31 wd:Q1339195 .
-				optional {?item wdt:P1619 ?opening} .
-				optional {?item wdt:P18 ?image} .
-				optional {?item wdt:P625 ?geo} .
-				optional {?item wdt:P197 ?adjStations} .
-				optional {?item wdt:P131 ?city} .
-				optional {?city wdt:P373 ?cityName }
+				${properties}
 				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 				FILTER(?item IN (wd:${this.additionalData.id}))
 			} UNION {
 				?item wdt:P31 wd:Q55488 .
-				optional {?item wdt:P1619 ?opening} .
-				optional {?item wdt:P18 ?image} .
-				optional {?item wdt:P625 ?geo} .
-				optional {?item wdt:P197 ?adjStations} .
-				optional {?item wdt:P131 ?city} .
-				optional {?city wdt:P373 ?cityName }
+				${properties}
 				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 				FILTER(?item IN (wd:${this.additionalData.id}))
 			} UNION {
 				?item wdt:P31 wd:Q3201814 .
-				optional {?item wdt:P1619 ?opening} .
-				optional {?item wdt:P18 ?image} .
-				optional {?item wdt:P625 ?geo} .
-				optional {?item wdt:P197 ?adjStations} .
-				optional {?item wdt:P131 ?city} .
-				optional {?city wdt:P373 ?cityName }
+				${properties}
 				SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 				FILTER(?item IN (wd:${this.additionalData.id}))
 			}
@@ -174,32 +225,47 @@ class Station {
 		const fullUrl = endpointUrl + '?query=' + encodeURIComponent( sparqlQuery );
 
 		const headers = { 'Accept': 'application/sparql-results+json' };
-
+		this.images = [];
+		this.adjStations = [];
 		fetch(fullUrl, {headers})
 			.then(body => body.json())
 			.then((json) => {
-				const {head: {vars}, results} = json;
+				const {results} = json;
 				this.expanded = true;
 				for (const result of results.bindings ) {
-					// for ( const variable of vars ) {
-
-					// this.expanded = true;
 					// this.geoPos = {
 					// 	lat: data.lat,
 					// 	lon: data.lon
 					// };
-					// this.destroyed = data.endmin;
 					// this.urls.wiki = data.wiki;
 					// this.images = [];
-					// data.depictions.forEach((img) => {
-					// 	this.images.push(img);
-					// });
 					// this.description = data.description;
-						
-					// }
-					if (result['opening']) {
+					if (result['opening'] && this.created === '0') {
 						this.created = new Date(result['opening'].value).getFullYear();
 					}
+					if (result['endtime']) {
+						this.destroyed = new Date(result['endtime'].value).getFullYear();
+					}
+					if (result['image']) {
+						this.images.push(result['image'].value);
+					}
+					if (result['adjStations']) {
+						this.adjStations.push(result['adjStations'].value);
+					}
+					if (result['cityName']) {
+						this.cityName = result['cityName'].value;
+					}
+					if (result['article']) {
+						this.urls.wiki = result['article'].value;
+					}
+
+					if (result['geo']) {
+						console.log('geo', this.name, result['geo'].value);
+						// TODO: Parse Geoloc
+						// Point(4.900555555 52.378888888)
+					}
+				}
+				if (!this.destroyed) {
 					this.destroyed = 2018;
 				}
 				return callback(true);
