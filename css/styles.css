@@ -1,4 +1,8 @@
 @import url("https://fonts.googleapis.com/css?family=Karma");
+html {
+  cursor: all-scroll;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -6,11 +10,15 @@ body {
   background-color: rgba(248, 232, 212, 0.6);
   background-image: url("/img/texturedpaper.png");
   font-family: 'Karma', serif;
-  cursor: all-scroll;
 }
 
 .hidden {
   display: none !important;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 header {
@@ -58,6 +66,7 @@ header {
   border-bottom: 20px solid;
   border-image: url("/img/train-tracks.svg") 18 round;
   transition: .5s;
+  max-height: 100vh;
 }
 
 .station[data-created] {
@@ -66,6 +75,7 @@ header {
 
 .station.detail {
   position: absolute;
+  cursor: zoom-out;
   top: 0;
   bottom: 0;
   left: 0 !important;
@@ -73,11 +83,24 @@ header {
   width: 100vw !important;
   z-index: 99;
   background-color: white;
+  display: grid;
+  grid-template-columns: 70% 1fr;
+  grid-template-rows: 4em 1fr;
+  border-image: url("/img/train-tracks.svg") 67 round;
 }
 
-.station.detail img, .station.detail svg {
-  bottom: initial;
-  top: 0;
+.station.detail > img, .station.detail > svg {
+  display: none;
+}
+
+.station.detail .name {
+  font-size: 1.6em;
+}
+
+.station.detail .details {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  max-height: 100%;
 }
 
 .station:hover:not(.detail), .station:focus:not(.detail) {
@@ -110,7 +133,7 @@ header {
   display: none;
 }
 
-.deprecated img {
+.deprecated > img {
   filter: grayscale(100);
 }
 

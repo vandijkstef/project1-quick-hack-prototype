@@ -22,9 +22,6 @@ class Station {
 			type: urlArray[2],
 			id: urlArray[4]
 		};
-		// if (additionalData.type === 'verdwenengebouwen.nl') {
-			
-		// }
 		return additionalData;
 	}
 
@@ -44,7 +41,9 @@ class Station {
 	}
 
 	Focus() {
-		this._element.scrollIntoView();
+		setTimeout(() => {
+			this._element.scrollIntoView();
+		}, 100);
 	}
 
 	Render(timelineElement, scales) {
@@ -63,7 +62,6 @@ class Station {
 		});
 		UIT.addHandler(window, (e) => {
 			if (document.activeElement === this._element && e.key === 'Enter') {
-				// console.log(e);	
 				this.OpenStation(e);
 			}
 		}, 'keyup');
@@ -99,8 +97,14 @@ class Station {
 	// Render stuff on the detail view
 	GetDetails() {
 		if (!this._detailElement) {
-			console.log('rendering detaul');
-			this._detailElement = UIT.renderIn(UIT.getText('Details'), this._element, 'details')[0];
+			const content = [];
+			console.log(this.images);
+			if (this.images.length > 0) {
+				const imageUrl = this.images[0].src || this.images[0];
+				content.push(UIT.getImage(imageUrl));
+			}
+
+			this._detailElement = UIT.renderIn(content, this._element, 'details')[0]; 
 		}
 	}
 
